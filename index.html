@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="xr-spatial-tracking" content="true">
+    <title>WebXR 차트룸 (해도실)</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden;
+            background-color: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        canvas { display: block; }
+        #VRButton {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+            display: block;
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+        }
+        
+        /* 프로필 박스 스타일 */
+        #profile-box {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 250px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 200;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .profile-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 10px;
+            border: 2px solid #4a90e2;
+        }
+        
+        .profile-info {
+            flex: 1;
+        }
+        
+        .profile-name {
+            font-weight: bold;
+            font-size: 18px;
+            margin: 0;
+            color: #fff;
+        }
+        
+        .profile-status {
+            font-size: 14px;
+            color: #aaa;
+            margin: 5px 0 0 0;
+        }
+        
+        .profile-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            font-size: 16px;
+            color: #4a90e2;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        /* 알림 박스 스타일 */
+        #notice-box {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 200;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .notice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
+        }
+        
+        .notice-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin: 0;
+            color: #fff;
+        }
+        
+        .notice-close {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .notice-item {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .notice-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notice-message {
+            font-size: 14px;
+            color: #fff;
+            margin: 0 0 5px 0;
+        }
+        
+        .notice-time {
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        /* 채팅 입력 영역 */
+        #chat-input-area {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            max-width: 600px;
+            display: flex;
+            z-index: 200;
+        }
+        
+        #chat-input {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 30px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        #chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        #chat-send {
+            margin-left: 10px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background-color: #4a90e2;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">WebXR 차트룸 (해도실) - WASD로 이동, Shift+W/S로 상하 이동, 마우스로 시점 이동, VR 버튼으로 VR 모드 진입</div>
+    <div id="loading">로딩 중...</div>
+    
+    <!-- 프로필 박스 -->
+    <div id="profile-box">
+        <div class="profile-header">
+            <img src="https://via.placeholder.com/50" alt="프로필 이미지" class="profile-avatar">
+            <div class="profile-info">
+                <h3 class="profile-name">User name</h3>
+                <p class="profile-status">온라인</p>
+            </div>
+        </div>
+        <div class="profile-stats">
+            <div class="stat-item">
+                <div class="stat-value">15</div>
+                <div class="stat-label">차트</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">128</div>
+                <div class="stat-label">방문자</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">56</div>
+                <div class="stat-label">공유</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 알림 박스 -->
+    <div id="notice-box">
+        <div class="notice-header">
+            <h3 class="notice-title">Notification</h3>
+            <button class="notice-close" id="notice-close">&times;</button>
+        </div>
+        <div class="notice-content">
+            <div class="notice-item">
+                <p class="notice-message">WebXR 차트룸(해도실)에 오신 것을 환영합니다!</p>
+                <p class="notice-time">방금 전</p>
+            </div>
+            <div class="notice-item">
+                <p class="notice-message">마우스 왼쪽 버튼을 누른 상태에서 시점을 이동할 수 있습니다.</p>
+                <p class="notice-time">1분 전</p>
+            </div>
+            <div class="notice-item">
+                <p class="notice-message">차트 데이터를 확인하려면 하단의 입력창을 사용하세요.</p>
+                <p class="notice-time">2분 전</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 채팅 입력 영역 -->
+    <div id="chat-input-area">
+        <input type="text" id="chat-input" placeholder="감정을 표현해보세요!">
+        <button id="chat-send">→</button>
+    </div>
+    
+    <script async src="https://unpkg.com/es-module-shims/dist/es-module-shims.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
