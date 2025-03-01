@@ -623,10 +623,13 @@ helpOverlay.style.boxSizing = 'border-box';
 helpOverlay.style.zIndex = '1000';
 helpOverlay.style.display = 'none';
 helpOverlay.style.overflow = 'auto';
+helpOverlay.style.display = 'flex'; // 플렉스 컨테이너로 변경
+helpOverlay.style.alignItems = 'center'; // 수직 중앙 정렬
+helpOverlay.style.justifyContent = 'center'; // 수평 중앙 정렬
 
 // 이전 스타일의 도움말 UI로 변경
 helpOverlay.innerHTML = `
-    <div style="max-width: 800px; margin: 0 auto; background-color: rgba(50, 50, 50, 0.8); padding: 20px; border-radius: 10px; box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);">
+    <div style="max-width: 800px; width: 80%; background-color: rgba(50, 50, 50, 0.8); padding: 20px; border-radius: 10px; box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);">
         <h2 style="text-align: center; color: #4CAF50; margin-top: 0;">WebXR 슈팅 게임 도움말</h2>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div>
@@ -646,7 +649,6 @@ helpOverlay.innerHTML = `
                     <li style="margin-bottom: 10px;"><span style="color: #4CAF50; font-weight: bold;">VR 모드</span> - VR 버튼을 클릭하여 VR 모드로 전환할 수 있습니다.</li>
                     <li style="margin-bottom: 10px;"><span style="color: #4CAF50; font-weight: bold;">ESC 키</span> - 마우스 잠금을 해제합니다.</li>
                     <li style="margin-bottom: 10px;"><span style="color: #4CAF50; font-weight: bold;">Tab 키</span> - 이 도움말을 닫습니다.</li>
-                    <li style="margin-bottom: 10px;"><span style="color: #4CAF50; font-weight: bold;">1-5 키</span> - 빠른 감정 표현</li>
                 </ul>
             </div>
         </div>
@@ -672,55 +674,11 @@ document.addEventListener('keydown', function(event) {
                 controls.lock();
             }
         } else {
-            helpOverlay.style.display = 'block';
+            helpOverlay.style.display = 'flex'; // 플렉스 디스플레이로 변경
             helpOverlayVisible = true;
             
             // 도움말이 표시될 때 포인터 잠금 해제
             controls.unlock();
-            
-            // 프로필 박스와 알림 박스를 오버레이 위에 표시하기 위해 z-index 조정
-            // 여러 가능한 선택자 시도
-            const profileElements = [
-                document.querySelector('.profile-box'),
-                document.querySelector('.user-profile'),
-                document.getElementById('user-profile'),
-                document.querySelector('.user-info'),
-                // 사용자 이름과 아바타가 있는 모든 요소 선택
-                ...document.querySelectorAll('[class*="profile"]'),
-                ...document.querySelectorAll('[class*="user"]'),
-                ...document.querySelectorAll('[id*="profile"]'),
-                ...document.querySelectorAll('[id*="user"]')
-            ];
-            
-            // 모든 가능한 프로필 요소의 z-index 설정
-            profileElements.forEach(element => {
-                if (element) {
-                    element.style.zIndex = '1001'; // 오버레이보다 높은 z-index
-                }
-            });
-            
-            // 알림 박스 z-index 설정
-            const noticeBox = document.getElementById('notice-box');
-            if (noticeBox) {
-                noticeBox.style.zIndex = '1001';
-            }
-            
-            // 채팅 입력창도 오버레이 위에 표시
-            const chatContainer = document.querySelector('.chat-container');
-            if (chatContainer) {
-                chatContainer.style.zIndex = '1001';
-            }
-            
-            // 말풍선도 오버레이 위에 표시
-            document.querySelectorAll('.screen-bubble').forEach(bubble => {
-                bubble.style.zIndex = '1001';
-            });
-            
-            // 십자선도 오버레이 위에 표시
-            const crosshair = document.getElementById('crosshair');
-            if (crosshair) {
-                crosshair.style.zIndex = '1003';
-            }
         }
     }
 });
@@ -962,129 +920,117 @@ document.addEventListener('DOMContentLoaded', setupChatInputField);
 // 또는 즉시 실행
 setupChatInputField();
 
-// 화면 상단에 탭바 추가
-function setupTabBar() {
-    // 탭바 컨테이너 생성
-    const tabBar = document.createElement('div');
-    tabBar.className = 'tab-bar';
-    tabBar.style.position = 'absolute';
-    tabBar.style.top = '0';
-    tabBar.style.left = '0';
-    tabBar.style.width = '100%';
-    tabBar.style.height = '40px';
-    tabBar.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    tabBar.style.display = 'flex';
-    tabBar.style.alignItems = 'center';
-    tabBar.style.justifyContent = 'space-between'; // 변경: 요소 사이에 공간 배분
-    tabBar.style.padding = '0 20px'; // 패딩 추가
-    tabBar.style.zIndex = '1002';
+// 화면 상단에 조작 설명 추가
+function setupControlsGuide() {
+    // 컨트롤 가이드 컨테이너 생성
+    const controlsGuide = document.createElement('div');
+    controlsGuide.className = 'controls-guide';
+    controlsGuide.style.position = 'absolute';
+    controlsGuide.style.top = '20px';
+    controlsGuide.style.left = '50%';
+    controlsGuide.style.transform = 'translateX(-50%)';
+    controlsGuide.style.display = 'flex';
+    controlsGuide.style.gap = '20px';
+    controlsGuide.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+    controlsGuide.style.padding = '10px 20px';
+    controlsGuide.style.borderRadius = '10px';
+    controlsGuide.style.zIndex = '1002';
     
-    // 로고 컨테이너 생성
-    const logoContainer = document.createElement('div');
-    logoContainer.className = 'logo-container';
-    logoContainer.style.height = '100%';
-    logoContainer.style.display = 'flex';
-    logoContainer.style.alignItems = 'center';
+    // 이동 키 설명
+    const movementGuide = createControlGuide('이동', ['W', 'A', 'S', 'D']);
     
-    // 로고 이미지 생성
-    const logoImage = document.createElement('img');
-    logoImage.src = './logodtb.png'; // 로고 이미지 경로
-    logoImage.alt = 'Logo';
-    logoImage.style.height = '30px'; // 로고 높이 설정
-    logoImage.style.marginRight = '20px'; // 오른쪽 여백 추가
+    // 기타 조작 설명
+    const otherGuide = createControlGuide('그 외', [
+        { key: 'Tab', desc: '자세한 게임 설명' },
+        { key: 'Esc', desc: '마우스 포인트 이동 해제' }
+    ]);
     
-    // 로고 컨테이너에 이미지 추가
-    logoContainer.appendChild(logoImage);
+    // 컨테이너에 가이드 추가
+    controlsGuide.appendChild(movementGuide);
+    controlsGuide.appendChild(otherGuide);
     
-    // 탭 메뉴 컨테이너 생성
-    const tabMenuContainer = document.createElement('div');
-    tabMenuContainer.className = 'tab-menu-container';
-    tabMenuContainer.style.display = 'flex';
-    tabMenuContainer.style.alignItems = 'center';
-    tabMenuContainer.style.justifyContent = 'center';
-    tabMenuContainer.style.flex = '1'; // 남은 공간 차지
+    // 문서에 컨테이너 추가
+    document.body.appendChild(controlsGuide);
     
-    // 탭 항목 생성 함수
-    function createTab(text, isActive = false) {
-        const tab = document.createElement('div');
-        tab.className = 'tab-item';
-        tab.textContent = text;
-        tab.style.padding = '0 20px';
-        tab.style.height = '100%';
-        tab.style.display = 'flex';
-        tab.style.alignItems = 'center';
-        tab.style.justifyContent = 'center';
-        tab.style.color = isActive ? '#ffffff' : '#aaaaaa';
-        tab.style.fontWeight = isActive ? 'bold' : 'normal';
-        tab.style.cursor = 'pointer';
-        tab.style.transition = 'all 0.3s';
+    return controlsGuide;
+    
+    // 컨트롤 가이드 생성 함수
+    function createControlGuide(title, keys) {
+        const guideContainer = document.createElement('div');
+        guideContainer.style.display = 'flex';
+        guideContainer.style.flexDirection = 'column';
+        guideContainer.style.alignItems = 'center';
         
-        // 활성 탭 표시
-        if (isActive) {
-            tab.style.borderBottom = '2px solid #4CAF50';
+        // 제목
+        const titleElement = document.createElement('div');
+        titleElement.textContent = title;
+        titleElement.style.color = 'white';
+        titleElement.style.marginBottom = '10px';
+        titleElement.style.fontWeight = 'bold';
+        
+        guideContainer.appendChild(titleElement);
+        
+        // 키 컨테이너
+        const keysContainer = document.createElement('div');
+        keysContainer.style.display = 'flex';
+        keysContainer.style.gap = '5px';
+        keysContainer.style.flexWrap = 'wrap';
+        keysContainer.style.justifyContent = 'center';
+        
+        // 키 추가
+        if (Array.isArray(keys) && typeof keys[0] === 'string') {
+            // 단순 키 배열인 경우
+            keys.forEach(key => {
+                const keyElement = createKeyElement(key);
+                keysContainer.appendChild(keyElement);
+            });
+        } else if (Array.isArray(keys) && typeof keys[0] === 'object') {
+            // 키와 설명이 있는 객체 배열인 경우
+            keys.forEach(item => {
+                const keyWithDesc = document.createElement('div');
+                keyWithDesc.style.display = 'flex';
+                keyWithDesc.style.alignItems = 'center';
+                keyWithDesc.style.marginBottom = '5px';
+                
+                const keyElement = createKeyElement(item.key);
+                
+                const descElement = document.createElement('span');
+                descElement.textContent = item.desc;
+                descElement.style.color = 'white';
+                descElement.style.marginLeft = '5px';
+                descElement.style.fontSize = '12px';
+                
+                keyWithDesc.appendChild(keyElement);
+                keyWithDesc.appendChild(descElement);
+                keysContainer.appendChild(keyWithDesc);
+            });
         }
         
-        // 호버 효과
-        tab.addEventListener('mouseover', function() {
-            if (!isActive) {
-                tab.style.color = '#dddddd';
-            }
-        });
+        guideContainer.appendChild(keysContainer);
         
-        tab.addEventListener('mouseout', function() {
-            if (!isActive) {
-                tab.style.color = '#aaaaaa';
-            }
-        });
-        
-        // 클릭 이벤트
-        tab.addEventListener('click', function() {
-            // 모든 탭 비활성화
-            document.querySelectorAll('.tab-item').forEach(item => {
-                item.style.color = '#aaaaaa';
-                item.style.fontWeight = 'normal';
-                item.style.borderBottom = 'none';
-            });
-            
-            // 현재 탭 활성화
-            tab.style.color = '#ffffff';
-            tab.style.fontWeight = 'bold';
-            tab.style.borderBottom = '2px solid #4CAF50';
-            
-            // 여기에 탭 전환 로직 추가 가능
-            console.log(`${text} 탭 선택됨`);
-        });
-        
-        return tab;
+        return guideContainer;
     }
     
-    // 탭 항목 추가
-    const playTab = createTab('Play', true);
-    const profileTab = createTab('프로필');
-    const settingsTab = createTab('설정');
-    
-    // 탭 메뉴 컨테이너에 탭 항목 추가
-    tabMenuContainer.appendChild(playTab);
-    tabMenuContainer.appendChild(profileTab);
-    tabMenuContainer.appendChild(settingsTab);
-    
-    // 빈 공간 생성 (오른쪽 정렬을 위해)
-    const spacer = document.createElement('div');
-    spacer.style.width = logoContainer.offsetWidth + 'px'; // 로고와 동일한 너비
-    spacer.style.visibility = 'hidden'; // 보이지 않게 설정
-    
-    // 탭바에 요소 추가
-    tabBar.appendChild(logoContainer); // 왼쪽에 로고
-    tabBar.appendChild(tabMenuContainer); // 중앙에 탭 메뉴
-    tabBar.appendChild(spacer); // 오른쪽에 빈 공간
-    
-    // 탭바를 문서에 추가
-    document.body.appendChild(tabBar);
-    
-    return tabBar;
+    // 키 요소 생성 함수
+    function createKeyElement(key) {
+        const keyElement = document.createElement('div');
+        keyElement.textContent = key;
+        keyElement.style.width = '30px';
+        keyElement.style.height = '30px';
+        keyElement.style.backgroundColor = 'white';
+        keyElement.style.color = 'black';
+        keyElement.style.borderRadius = '5px';
+        keyElement.style.display = 'flex';
+        keyElement.style.alignItems = 'center';
+        keyElement.style.justifyContent = 'center';
+        keyElement.style.fontWeight = 'bold';
+        keyElement.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
+        
+        return keyElement;
+    }
 }
 
-// 페이지 로드 후 탭바 설정 실행
-document.addEventListener('DOMContentLoaded', setupTabBar);
+// 페이지 로드 후 조작 설명 설정 실행
+document.addEventListener('DOMContentLoaded', setupControlsGuide);
 // 또는 즉시 실행
-setupTabBar(); 
+setupControlsGuide(); 
